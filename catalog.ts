@@ -112,9 +112,25 @@ async function main() {
                 process.exit(1);
             }
 
+            try {
+                console.log(`Fetching current metrics for batch ${batchId}...`);
+                const stamp = await bee.stamp.get(batchId);
+                const ttlSeconds = (stamp as any).batchTTL || 0;
+                const daysRemaining = Math.floor(ttlSeconds / (24 * 3600));
+                
+                console.log(`\n======================================================`);
+                console.log(`[Honesty Check] Batch Time-To-Live Metrics`);
+                console.log(`Currently, this storage will expire in ~${daysRemaining} days.`);
+                console.log(`If it reaches 0, the catalog will be permanently lost.`);
+                console.log(`======================================================\n`);
+                
+            } catch (err) {
+                console.log(`Could not fetch prior metrics for batch. Proceeding anyway...`);
+            }
+
             console.log(`Topping up batch ${batchId} with ${amount} xBZZ...`);
-            const result = await bee.stamp.topUp(batchId, amount);
-            console.log("Top-up successful!");
+            await bee.stamp.topUp(batchId, amount);
+            console.log("Top-up successful! The collective storage has been secured for an extended period.");
         }
         else {
             console.log("Unknown command. Available: init, update, read, topup");
